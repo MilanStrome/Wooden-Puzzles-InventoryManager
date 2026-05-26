@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventory Manager • Wooden Puzzles</title>
+<style>
+  :root { --font:'Calibri','Calibri Light','Gill Sans',sans-serif; --red:#e53935; --med:#f59e0b; --green:#16a34a; }
+  [data-theme="black"]{ --bg:#f5f5f5;--surface:#fff;--surface2:#f0f0f0;--border:#d4d4d4;--accent:#111;--accent-hover:#333;--accent-text:#fff;--text:#111;--text2:#444;--muted:#888;--header-bg:#111;--header-text:#fff;--header-muted:#aaa;--stat-top:#111;--row-low:rgba(229,57,53,.06);--row-hover:rgba(0,0,0,.03);--inbound-bg:rgba(0,0,0,.08);--inbound-text:#333;--scrollbar:#ccc; }
+  [data-theme="pink"] { --bg:#fff5f7;--surface:#fff;--surface2:#fce7ef;--border:#f9c0d0;--accent:#e91e8c;--accent-hover:#c2166d;--accent-text:#fff;--text:#1a0a10;--text2:#5a2040;--muted:#c084a0;--header-bg:#e91e8c;--header-text:#fff;--header-muted:rgba(255,255,255,.75);--stat-top:#e91e8c;--row-low:rgba(229,57,53,.06);--row-hover:rgba(233,30,140,.04);--inbound-bg:rgba(233,30,140,.1);--inbound-text:#e91e8c;--scrollbar:#f9c0d0; }
+  [data-theme="blue"]  { --bg:#f2f6ff;--surface:#fff;--surface2:#e8f0fe;--border:#c7d9f8;--accent:#0071e3;--accent-hover:#0058b0;--accent-text:#fff;--text:#1d1d1f;--text2:#3a3a3c;--muted:#6e6e73;--header-bg:#0071e3;--header-text:#fff;--header-muted:rgba(255,255,255,.75);--stat-top:#0071e3;--row-low:rgba(229,57,53,.05);--row-hover:rgba(0,113,227,.04);--inbound-bg:rgba(0,113,227,.1);--inbound-text:#0071e3;--scrollbar:#c7d9f8; }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;min-height:100vh;}
+
+  /* HEADER */
+  header{background:var(--header-bg);color:var(--header-text);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .logo{display:flex;align-items:center;gap:12px;}
+  .logo-mark{font-size:21px;font-weight:700;color:var(--header-text);letter-spacing:-.5px;}
+  .logo-divider{width:1px;height:20px;background:rgba(255,255,255,.3);}
+  .logo-sub{font-size:12px;color:var(--header-muted);}
+  .header-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .hd{width:1px;height:20px;background:rgba(255,255,255,.2);}
+  .header-date{font-size:12px;color:var(--header-muted);white-space:nowrap;}
+  .hdr-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:var(--header-text);transition:all .15s;white-space:nowrap;}
+  .hdr-btn:hover{background:rgba(255,255,255,.22);}
+
+  /* WRAPPER */
+  .wrapper{max-width:1440px;margin:0 auto;padding:22px 28px;}
+
+  /* STATS */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:11px;margin-bottom:20px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;border-top:3px solid var(--stat-top);box-shadow:0 1px 4px rgba(0,0,0,.05);}
+  .stat-card.s-red{border-top-color:var(--red);} .stat-card.s-green{border-top-color:var(--green);} .stat-card.s-med{border-top-color:var(--med);}
+  .stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:600;}
+  .stat-value{font-size:24px;font-weight:700;color:var(--text);line-height:1;}
+  .stat-value.v-accent{color:var(--accent);} .stat-value.v-red{color:var(--red);} .stat-value.v-green{color:var(--green);} .stat-value.v-med{color:var(--med);}
+  .stat-inbound{font-size:12px;font-weight:600;color:var(--med);margin-left:5px;vertical-align:middle;}
+
+  /* TOOLBAR */
+  .toolbar{display:flex;align-items:center;gap:9px;margin-bottom:14px;flex-wrap:wrap;}
+  .search-wrap{position:relative;flex:1;min-width:180px;}
+  .search-wrap input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font);font-size:13px;padding:8px 14px 8px 33px;outline:none;transition:border-color .18s;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+  .search-wrap input:focus{border-color:var(--accent);}
+  .search-wrap input::placeholder{color:var(--muted);}
+  .s-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none;}
+  select{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font);font-size:13px;padding:8px 11px;outline:none;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+  select:focus{border-color:var(--accent);}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+  .btn-primary{background:var(--accent);color:var(--accent-text);} .btn-primary:hover{background:var(--accent-hover);}
+  .btn-secondary{background:var(--surface);border:1px solid var(--border);color:var(--text2);} .btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-green{background:#16a34a;color:#fff;} .btn-green:hover{background:#15803d;}
+  .btn-orange{background:#ea580c;color:#fff;} .btn-orange:hover{background:#c2410c;}
+  .tb-div{width:1px;height:28px;background:var(--border);}
+
+  /* FILE DROPDOWN MENU */
+  .file-menu-wrap{position:relative;}
+  .file-menu{display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.13);min-width:160px;z-index:150;overflow:hidden;animation:slideUp .15s ease;}
+  .file-menu.open{display:block;}
+  .file-menu-item{padding:10px 16px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:background .12s;white-space:nowrap;}
+  .file-menu-item:hover{background:var(--surface2);color:var(--accent);}
+  .file-menu-sep{height:1px;background:var(--border);margin:3px 0;}
+
+  /* TABLE */
+  .table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;overflow-x:auto;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+  table{width:100%;border-collapse:collapse;min-width:1020px;}
+  thead tr{background:var(--surface2);border-bottom:2px solid var(--border);}
+  th{font-family:var(--font);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);padding:12px 14px;text-align:left;cursor:pointer;user-select:none;white-space:nowrap;transition:color .15s;}
+  th:hover{color:var(--accent);}
+  th.sorted-asc::after{content:' ↑';color:var(--accent);}
+  th.sorted-desc::after{content:' ↓';color:var(--accent);}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .12s;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:var(--row-hover);}
+  tbody tr.row-low{background:var(--row-low);}
+  tbody tr.row-low:hover{background:rgba(229,57,53,.1);}
+  td{padding:9px 14px;font-size:13px;vertical-align:middle;}
+  .sku-cell{font-weight:700;font-size:13px;white-space:nowrap;}
+  .asin-link{display:block;font-size:10px;color:var(--accent);text-decoration:none;margin-top:1px;opacity:.8;}
+  .asin-link:hover{opacity:1;text-decoration:underline;}
+  .tag-pill{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);margin-top:2px;}
+  .num{text-align:right;font-variant-numeric:tabular-nums;}
+  .num-low{color:var(--red)!important;font-weight:700;}
+  .num-med{color:var(--med)!important;}
+  .inbound-tag{display:inline-block;font-size:10px;font-weight:600;color:var(--inbound-text);background:var(--inbound-bg);border-radius:4px;padding:1px 5px;margin-left:4px;}
+  .dist-bar{display:flex;height:5px;border-radius:3px;overflow:hidden;margin-top:4px;gap:1px;min-width:60px;}
+  .dist-seg{height:100%;min-width:2px;}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;}
+  .badge-low{background:rgba(229,57,53,.12);color:var(--red);}
+  .badge-med{background:rgba(245,158,11,.12);color:#b45309;}
+  .badge-good{background:rgba(22,163,74,.12);color:var(--green);}
+  .total-cell{font-size:14px;font-weight:700;text-align:right;}
+  .price-cell{text-align:right;color:var(--muted);font-size:13px;}
+  .notes-cell{color:var(--muted);font-size:12px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .reorder-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-left:4px;vertical-align:middle;animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .act-btn{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:5px;font-size:13px;transition:all .13s;}
+  .act-btn:hover{background:var(--surface2);color:var(--text);}
+  .act-btn.del:hover{color:var(--red);}
+  tfoot tr{background:var(--surface2);border-top:2px solid var(--border);}
+  tfoot td{font-weight:700;font-size:13px;color:var(--accent);padding:11px 14px;}
+
+  /* INLINE EDIT */
+  .editable-cell{position:relative;cursor:text;}
+  .editable-cell:hover::after{content:'✎';position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--muted);opacity:.5;}
+  .inline-input{background:var(--surface);border:2px solid var(--accent);border-radius:6px;color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;padding:3px 6px;outline:none;}
+  .inline-input:focus{box-shadow:0 0 0 3px rgba(0,113,227,.15);}
+
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:100;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:560px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:slideUp .22s ease;max-height:92vh;overflow-y:auto;}
+  @keyframes slideUp{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  .modal-title{font-size:19px;font-weight:700;color:var(--accent);margin-bottom:20px;}
+  .modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;}
+  .modal-close:hover{color:var(--text);}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .fg{display:flex;flex-direction:column;gap:5px;}
+  .fg.full{grid-column:1/-1;}
+  .fg label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);}
+  .fg input,.fg select{background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font);font-size:13px;padding:8px 10px;outline:none;transition:border-color .18s;}
+  .fg input:focus,.fg select:focus{border-color:var(--accent);}
+  .modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end;}
+  .section-sep{grid-column:1/-1;border:none;border-top:1px solid var(--border);margin:4px 0;}
+  .section-head{grid-column:1/-1;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:4px;}
+
+  /* WHATSAPP */
+  .wa-modal{max-width:600px;}
+  .wa-preview{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:12px;line-height:1.7;white-space:pre-wrap;font-family:var(--font);color:var(--text);max-height:340px;overflow-y:auto;margin-bottom:14px;}
+  .wa-actions{display:flex;gap:10px;justify-content:flex-end;}
+
+  /* SIDE PANEL (changelog + settings) */
+  .panel-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(3px);z-index:100;align-items:stretch;justify-content:flex-end;}
+  .panel-overlay.open{display:flex;}
+  .side-panel{background:var(--surface);border-left:1px solid var(--border);width:100%;max-width:440px;height:100vh;display:flex;flex-direction:column;animation:slideIn .25s ease;}
+  @keyframes slideIn{from{transform:translateX(100%);}to{transform:translateX(0);}}
+  .panel-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);flex-shrink:0;}
+  .panel-title{font-size:15px;font-weight:700;color:var(--text);}
+  .panel-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;}
+  .panel-close:hover{color:var(--text);}
+  .panel-body{flex:1;overflow-y:auto;padding:16px;}
+  .panel-footer{padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;}
+
+  /* CHANGELOG */
+  .log-item{padding:11px 13px;border-radius:8px;background:var(--bg);border:1px solid var(--border);margin-bottom:9px;}
+  .log-sku{font-weight:700;font-size:13px;color:var(--text);margin-bottom:3px;}
+  .log-time{font-size:11px;color:var(--muted);margin-bottom:5px;}
+  .log-changes{font-size:12px;color:var(--text2);line-height:1.6;}
+  .log-change-row{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;}
+  .log-field{color:var(--muted);min-width:90px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
+  .log-old{color:var(--red);text-decoration:line-through;}
+  .log-new{color:var(--green);font-weight:600;}
+  .log-arrow{color:var(--muted);}
+  .log-empty{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+  .log-badge{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;margin-left:6px;vertical-align:middle;}
+  .log-badge.added{background:rgba(22,163,74,.12);color:var(--green);}
+  .log-badge.edited{background:rgba(0,113,227,.1);color:#0071e3;}
+  .log-badge.deleted{background:rgba(229,57,53,.12);color:var(--red);}
+
+  /* SETTINGS */
+  .settings-section{margin-bottom:24px;}
+  .settings-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+  .setting-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;}
+  .setting-label{font-size:13px;font-weight:600;color:var(--text);}
+  .setting-desc{font-size:11px;color:var(--muted);margin-top:1px;}
+  .setting-control input[type=text],.setting-control input[type=number],.setting-control select{background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--font);font-size:13px;padding:7px 10px;outline:none;width:160px;}
+  .setting-control input:focus,.setting-control select:focus{border-color:var(--accent);}
+  .theme-picker{display:flex;gap:10px;}
+  .theme-opt{width:32px;height:32px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:all .18s;position:relative;}
+  .theme-opt:hover{transform:scale(1.1);}
+  .theme-opt.active{border-color:var(--accent);}
+  .theme-opt.active::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.5);}
+  .to-black{background:#111;} .to-pink{background:#e91e8c;} .to-blue{background:#0071e3;}
+  .save-settings-btn{width:100%;justify-content:center;margin-top:8px;}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:22px;right:22px;background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:11px 17px;font-size:13px;font-weight:600;color:var(--accent);z-index:300;transform:translateY(60px);opacity:0;transition:all .28s;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.12);}
+  .toast.show{transform:translateY(0);opacity:1;}
+  .toast.err{border-color:var(--red);color:var(--red);}
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--scrollbar);border-radius:3px;}
+
+  .empty{text-align:center;padding:48px;color:var(--muted);font-size:14px;}
+  .empty .icon{font-size:34px;margin-bottom:8px;}
+  #fileInput,#csvFileInput{display:none;}
+
+  /* STAT CARD TOOLTIP */
+  .stat-info{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(229,57,53,.15);color:var(--red);font-size:10px;font-weight:700;cursor:default;margin-left:6px;vertical-align:middle;border:1px solid rgba(229,57,53,.3);flex-shrink:0;user-select:none;}
+  .stat-tooltip-wrap{position:relative;display:inline-flex;align-items:center;}
+  .stat-tooltip{visibility:hidden;opacity:0;position:absolute;top:calc(100% + 10px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;min-width:210px;max-width:290px;box-shadow:0 8px 28px rgba(0,0,0,.16);z-index:200;transition:opacity .18s,visibility .18s;}
+  .stat-tooltip-wrap:hover .stat-tooltip{visibility:visible;opacity:1;}
+  .stat-tooltip-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:7px;}
+  .stat-tooltip-item{display:flex;align-items:center;gap:7px;padding:2px 0;color:var(--text);font-weight:600;font-size:12px;}
+  .stat-tooltip-dot{width:7px;height:7px;border-radius:50%;background:var(--red);flex-shrink:0;}
+  .stat-tooltip-dot.zero{background:#555;}
+</style>
+</head>
+<body data-theme="black">
+
+<header>
+  <div class="logo">
+    <span class="logo-mark" id="brandName">Inventory Manager</span>
+    <div class="logo-divider"></div>
+    <span class="logo-sub">Wooden Puzzles</span>
+  </div>
+  <div class="header-right">
+    <span class="header-date" id="headerDate"></span>
+    <div class="hd"></div>
+    <button class="hdr-btn" onclick="openSettings()">⚙️ Settings</button>
+  </div>
+</header>
+
+<div class="wrapper">
+  <div class="stats" id="statsRow"></div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="s-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search SKU, ASIN, tag...">
+    </div>
+    <select id="filterStore">
+      <option value="all">All Stores</option>
+      <option value="amazon">Amazon</option>
+      <option value="tiktok">TikTok</option>
+      <option value="walmart">Walmart</option>
+      <option value="prepprime" id="ppFilterOpt">PrepPrime</option>
+    </select>
+    <select id="filterTag">
+      <option value="all">All Tags</option>
+    </select>
+    <select id="filterLevel">
+      <option value="all">All Levels</option>
+      <option value="low">🔴 Low Stock</option>
+      <option value="med">🟡 Medium</option>
+      <option value="good">🟢 Healthy</option>
+      <option value="zero">⚫ Out of Stock</option>
+    </select>
+    <select id="filterSort">
+      <option value="none">Sort: Default</option>
+      <option value="total_desc">Total ↓</option>
+      <option value="total_asc">Total ↑</option>
+      <option value="price_desc">Price ↓</option>
+      <option value="price_asc">Price ↑</option>
+      <option value="sku_asc">SKU A→Z</option>
+      <option value="sku_desc">SKU Z→A</option>
+    </select>
+    <div class="tb-div"></div>
+    <button class="btn btn-primary" onclick="openAddModal()">＋ Add SKU</button>
+    <button class="btn btn-secondary" onclick="openWhatsApp()">📋 Copy Details</button>
+    <button class="btn btn-secondary" onclick="openChangelog()">📋 Log <span id="logBadge" style="display:none;background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;margin-left:2px;"></span></button>
+    <div class="tb-div"></div>
+    <div class="file-menu-wrap">
+      <button class="btn btn-secondary" onclick="toggleFileMenu(event)">🗂 Files ▾</button>
+      <div class="file-menu" id="fileMenu">
+        <div class="file-menu-item" onclick="document.getElementById('fileInput').click();closeFileMenu()">📂 Load JSON</div>
+        <div class="file-menu-item" onclick="exportJSON();closeFileMenu()">💾 Save JSON</div>
+        <div class="file-menu-sep"></div>
+        <div class="file-menu-item" onclick="document.getElementById('csvFileInput').click();closeFileMenu()">📥 Import CSV</div>
+        <div class="file-menu-item" onclick="exportCSV();closeFileMenu()">📊 Export CSV</div>
+      </div>
+    </div>
+    <input type="file" id="fileInput" accept=".json" onchange="loadJSON(event)">
+    <input type="file" id="csvFileInput" accept=".csv" onchange="importCSV(event)">
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th id="th-sku" onclick="sortBy('sku')">SKU / Info</th>
+        <th id="th-amazon" onclick="sortBy('amazon')" style="text-align:right">Amazon</th>
+        <th id="th-tiktok" onclick="sortBy('tiktok')" style="text-align:right">TikTok</th>
+        <th id="th-walmart" onclick="sortBy('walmart')" style="text-align:right">Walmart</th>
+        <th id="th-prepprime" onclick="sortBy('prepprime')" style="text-align:right" id="ppHeader">PrepPrime</th>
+        <th id="th-total" onclick="sortBy('total')" style="text-align:right">Total</th>
+        <th id="th-price" onclick="sortBy('price')" style="text-align:right">Price</th>
+        <th>Status</th>
+        <th>Notes</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="tableBody"></tbody>
+      <tfoot id="tableFoot"></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modalTitle">Add SKU</div>
+    <div class="form-grid">
+      <div class="fg full"><label>SKU Name</label><input type="text" id="fSku" placeholder="WPT-XXXX-XXXX" autocomplete="off"></div>
+      <div class="fg full"><label>Amazon ASIN <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label><input type="text" id="fAsin" placeholder="B0XXXXXXXXX" autocomplete="off"></div>
+      <div class="fg full"><label>Tag / Category <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label><input type="text" id="fTag" placeholder="e.g. Chunky, Peg, Sorting" autocomplete="off" list="tagSuggestions"><datalist id="tagSuggestions"></datalist></div>
+      <div class="fg full"><label>Custom Reorder Point <span style="font-weight:400;text-transform:none;letter-spacing:0">(0 = use global)</span></label><input type="number" id="fReorder" placeholder="0" min="0"></div>
+      <hr class="section-sep">
+      <div class="section-head">Stock</div>
+      <div class="fg"><label>Amazon Stock</label><input type="number" id="fAmazon" placeholder="0" min="0"></div>
+      <div class="fg"><label>Amazon Inbound</label><input type="number" id="fAmazonInbound" placeholder="0" min="0"></div>
+      <div class="fg"><label>TikTok Stock</label><input type="number" id="fTiktok" placeholder="0" min="0"></div>
+      <div class="fg"><label>TikTok Inbound</label><input type="number" id="fTiktokInbound" placeholder="0" min="0"></div>
+      <div class="fg"><label>Walmart Stock</label><input type="number" id="fWalmart" placeholder="0" min="0"></div>
+      <div class="fg"><label>Walmart Inbound</label><input type="number" id="fWalmartInbound" placeholder="0" min="0"></div>
+      <div class="fg"><label id="fPrepprimeLabel">PrepPrime Stock</label><input type="number" id="fPrepprime" placeholder="0" min="0"></div>
+      <div class="fg"><label>Price</label><input type="number" id="fPrice" placeholder="0.00" min="0" step="0.01"></div>
+      <div class="fg full"><label>Notes</label><input type="text" id="fNotes" placeholder="e.g. Vine enrolled, PPC running" autocomplete="off"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSKU()">Save SKU</button>
+    </div>
+  </div>
+</div>
+
+<!-- WHATSAPP MODAL -->
+<div class="modal-overlay" id="waOverlay">
+  <div class="modal wa-modal">
+    <button class="modal-close" onclick="closeWa()">✕</button>
+    <div class="modal-title">📲 WhatsApp Stock Summary</div>
+    <div class="wa-preview" id="waPreview"></div>
+    <div class="wa-actions">
+      <button class="btn btn-secondary" onclick="closeWa()">Close</button>
+      <button class="btn btn-green" onclick="copyWa()">📋 Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGELOG PANEL -->
+<div class="panel-overlay" id="clOverlay">
+  <div class="side-panel">
+    <div class="panel-header">
+      <div class="panel-title">📋 Change Log</div>
+      <button class="panel-close" onclick="closeChangelog()">✕</button>
+    </div>
+    <div class="panel-body" id="clBody"></div>
+    <div class="panel-footer">
+      <button class="btn btn-secondary" style="width:100%;justify-content:center;" onclick="clearChangelog()">🗑 Clear All Logs</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div class="panel-overlay" id="settingsOverlay">
+  <div class="side-panel">
+    <div class="panel-header">
+      <div class="panel-title">⚙️ Settings</div>
+      <button class="panel-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="panel-body">
+
+      <!-- APPEARANCE -->
+      <div class="settings-section">
+        <div class="settings-section-title">🎨 Appearance</div>
+        <div class="setting-row">
+          <div><div class="setting-label">Theme</div><div class="setting-desc">Choose your colour scheme</div></div>
+          <div class="theme-picker">
+            <div class="theme-opt to-black active" id="to-black" onclick="setTheme('black')" title="White + Black"></div>
+            <div class="theme-opt to-pink"  id="to-pink"  onclick="setTheme('pink')"  title="White + Pink"></div>
+            <div class="theme-opt to-blue"  id="to-blue"  onclick="setTheme('blue')"  title="White + Blue"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BRAND -->
+      <div class="settings-section">
+        <div class="settings-section-title">🏷 Brand</div>
+        <div class="setting-row">
+          <div><div class="setting-label">Brand Name</div><div class="setting-desc">Shown in the header</div></div>
+          <div class="setting-control"><input type="text" id="sBrandName" value="Inventory Manager"></div>
+        </div>
+      </div>
+
+      <!-- STORES -->
+      <div class="settings-section">
+        <div class="settings-section-title">🏪 Store Names</div>
+        <div class="setting-row">
+          <div><div class="setting-label">Store 4 Name</div><div class="setting-desc">Currently "PrepPrime"</div></div>
+          <div class="setting-control"><input type="text" id="sStoreName" placeholder="PrepPrime"></div>
+        </div>
+      </div>
+
+      <!-- CURRENCY & FORMAT -->
+      <div class="settings-section">
+        <div class="settings-section-title">💱 Currency & Format</div>
+        <div class="setting-row">
+          <div><div class="setting-label">Currency Symbol</div><div class="setting-desc">Shown next to prices</div></div>
+          <div class="setting-control">
+            <select id="sCurrency">
+              <option value="$">$ USD</option>
+              <option value="₹">₹ INR</option>
+              <option value="£">£ GBP</option>
+              <option value="€">€ EUR</option>
+              <option value="A$">A$ AUD</option>
+              <option value="C$">C$ CAD</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Date Format</div><div class="setting-desc">How dates are displayed</div></div>
+          <div class="setting-control">
+            <select id="sDateFmt">
+              <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+              <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+              <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- INVENTORY -->
+      <div class="settings-section">
+        <div class="settings-section-title">📦 Inventory</div>
+        <div class="setting-row">
+          <div><div class="setting-label">Global Low Threshold</div><div class="setting-desc">Units per store (SKU override available)</div></div>
+          <div class="setting-control"><input type="number" id="sThreshold" min="0" max="9999" value="50"></div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Show Stock Distribution</div><div class="setting-desc">Mini bar under each total</div></div>
+          <div class="setting-control">
+            <select id="sShowDist">
+              <option value="1">Show</option>
+              <option value="0">Hide</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Show ASIN Link</div><div class="setting-desc">Clickable ASIN under SKU name</div></div>
+          <div class="setting-control">
+            <select id="sShowAsin">
+              <option value="1">Show</option>
+              <option value="0">Hide</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Show Tag / Category</div><div class="setting-desc">Pill badge under SKU name</div></div>
+          <div class="setting-control">
+            <select id="sShowTag">
+              <option value="1">Show</option>
+              <option value="0">Hide</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Total includes Inbound</div><div class="setting-desc">Add inbound units to Total column</div></div>
+          <div class="setting-control">
+            <select id="sShowInboundTotal">
+              <option value="1">On (default)</option>
+              <option value="0">Off — stock only</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Show Breakdown in Total</div><div class="setting-desc">Show (stock + inbound) below total</div></div>
+          <div class="setting-control">
+            <select id="sShowTotalBreakdown">
+              <option value="1">Show (default)</option>
+              <option value="0">Hide</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Auto-save Reminder</div><div class="setting-desc">Minutes of unsaved changes</div></div>
+          <div class="setting-control">
+            <select id="sAutoSave">
+              <option value="0">Off</option>
+              <option value="5">5 min</option>
+              <option value="10">10 min</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="settings-section">
+        <div class="settings-section-title"></div>
+        <div class="setting-row">
+          <div class="setting-label">BUILT AS A TOOL, USED LIKE A WEAPON.</div>
+        </div>
+        <div class="settings-section-title"></div>
+      </div>
+
+      <button class="btn btn-primary save-settings-btn" onclick="saveSettings()">✓ Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DEFAULT DATA ──────────────────────────────────────────────────
+const DEFAULT_DATA = {
+  last_updated:"2026-05-26",
+  skus:[
+    {sku:"WPT-FANI-CHUNKY", asin:"B0DKY8L1H2", tag:"Chunky", reorder_point:0, amazon:0,  amazon_inbound:120,tiktok:4,  tiktok_inbound:0,walmart:34, walmart_inbound:0,prepprime:296, price:12.99,notes:""},
+    {sku:"WPT-STACKSORT",   asin:"B0DKFPSFGQ", tag:"Sorting",reorder_point:0, amazon:4,  amazon_inbound:72, tiktok:121,tiktok_inbound:0,walmart:57, walmart_inbound:0,prepprime:270, price:15.99,notes:""},
+    {sku:"WPT-CVEH-CHUNKY", asin:"B0GQZNDB82", tag:"Chunky", reorder_point:0, amazon:14, amazon_inbound:84, tiktok:63, tiktok_inbound:0,walmart:59, walmart_inbound:0,prepprime:516, price:14.99,notes:""},
+    {sku:"WPT-VEH-CHUNKY",  asin:"B0DKYTTR37", tag:"Chunky", reorder_point:0, amazon:21, amazon_inbound:84, tiktok:58, tiktok_inbound:0,walmart:29, walmart_inbound:0,prepprime:297, price:9.79, notes:""},
+    {sku:"WPT-NUM-PEG",     asin:"B0DKYGQYVJ", tag:"Peg",    reorder_point:0, amazon:33, amazon_inbound:60, tiktok:46, tiktok_inbound:0,walmart:49, walmart_inbound:0,prepprime:2925,price:14.99,notes:""},
+    {sku:"WPT-LFAM-CHUNKY", asin:"B0GTR7WHSK", tag:"Chunky", reorder_point:0, amazon:42, amazon_inbound:60, tiktok:55, tiktok_inbound:0,walmart:59, walmart_inbound:0,prepprime:564, price:19.99,notes:""},
+    {sku:"WPT-SRT-CLOK",    asin:"B0GTR7WHSK", tag:"Sorting",reorder_point:0, amazon:49, amazon_inbound:48, tiktok:76, tiktok_inbound:0,walmart:91, walmart_inbound:0,prepprime:1092,price:19.99,notes:""},
+    {sku:"WPT-WANI-CHUNKY", asin:"B0DKY9Q5YH", tag:"Chunky", reorder_point:0, amazon:72, amazon_inbound:36, tiktok:72, tiktok_inbound:0,walmart:51, walmart_inbound:0,prepprime:346, price:14.99,notes:""},
+    {sku:"WPT-SHP-PEG",     asin:"B0DKYBVVL8", tag:"Peg",    reorder_point:0, amazon:86, amazon_inbound:24, tiktok:47, tiktok_inbound:0,walmart:31, walmart_inbound:0,prepprime:1701,price:19.99,notes:""},
+    {sku:"WPT-DINO-CHUNKY", asin:"B0DKYR8Q7F", tag:"Chunky", reorder_point:0, amazon:95, amazon_inbound:24, tiktok:13, tiktok_inbound:0,walmart:27, walmart_inbound:0,prepprime:477, price:9.49, notes:""},
+    {sku:"WPT-ALPH-PEG",    asin:"B0DKVLRYQC", tag:"Peg",    reorder_point:0, amazon:134,amazon_inbound:24, tiktok:89, tiktok_inbound:0,walmart:133,walmart_inbound:0,prepprime:2841,price:13.99,notes:""},
+  ]
+};
+
+// ── SETTINGS DEFAULTS ─────────────────────────────────────────────
+let settings = {
+  theme:'black', brandName:'Inventory Manager', storeName:'PrepPrime',
+  currency:'$', dateFmt:'DD/MM/YYYY', threshold:50,
+  showDist:1, showAsin:1, showTag:1, showInboundTotal:1, showTotalBreakdown:1, autoSave:0
+};
+
+// ── STATE ─────────────────────────────────────────────────────────
+let data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+let editIdx = null;
+let sortState = {field:null,dir:1};
+let changelog = [];
+let unsavedChanges = 0;
+let autoSaveTimer = null;
+
+// ── UTILS ─────────────────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function csvField(v){ const s=String(v??''); return (s.includes(',')||s.includes('"')||s.includes('\n'))?'"'+s.replace(/"/g,'""')+'"':s; }
+function triggerDownload(url,fn){ const a=document.createElement('a'); a.href=url; a.download=fn; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(url),1000); }
+function getThresh(){ return Math.max(0, parseInt(document.getElementById('threshold')||{value:settings.threshold}) || settings.threshold); }
+function getThreshForRow(row){ return (row.reorder_point&&row.reorder_point>0) ? row.reorder_point : settings.threshold; }
+function stockLevel(v,t){ if(v<=t*.5)return'low'; if(v<=t)return'med'; return'good'; }
+function rowLevel(row,store){
+  const t=getThreshForRow(row);
+  if(store!=='all') return stockLevel(row[store]||0,t);
+  return stockLevel(Math.min(row.amazon||0,row.tiktok||0,row.walmart||0),t);
+}
+function rowHasZero(row){ return (row.amazon||0)===0||(row.tiktok||0)===0||(row.walmart||0)===0; }
+function rowTotal(r){ return (r.amazon||0)+(r.tiktok||0)+(r.walmart||0)+(r.prepprime||0); }
+function rowTotalWithInbound(r){ return rowTotal(r)+(r.amazon_inbound||0)+(r.tiktok_inbound||0)+(r.walmart_inbound||0); }
+function rowDisplayTotal(r){ return settings.showInboundTotal ? rowTotalWithInbound(r) : rowTotal(r); }
+function nowStr(){
+  const d=new Date();
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+}
+function fmtDate(isoDate){
+  if(!isoDate)return '';
+  const [y,m,d]=isoDate.split('-');
+  if(settings.dateFmt==='DD/MM/YYYY') return `${d}/${m}/${y}`;
+  if(settings.dateFmt==='MM/DD/YYYY') return `${m}/${d}/${y}`;
+  return isoDate;
+}
+function markUnsaved(){
+  unsavedChanges++;
+  if(settings.autoSave>0){
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer=setTimeout(()=>{
+      if(unsavedChanges>0) showToast('⏰ You have unsaved changes — remember to Save JSON!');
+    }, settings.autoSave*60000);
+  }
+}
+const FIELD_LABELS={amazon:'Amazon',tiktok:'TikTok',walmart:'Walmart',prepprime:'PrepPrime',amazon_inbound:'AMZ Inbound',tiktok_inbound:'TikTok Inbound',walmart_inbound:'Walmart Inbound',price:'Price',notes:'Notes',sku:'SKU',asin:'ASIN',tag:'Tag',reorder_point:'Reorder Pt'};
+const fieldLabel=f=>FIELD_LABELS[f]||f;
+
+// ── THEME ─────────────────────────────────────────────────────────
+function setTheme(t){
+  settings.theme=t;
+  document.body.setAttribute('data-theme',t);
+  document.querySelectorAll('.theme-opt').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('to-'+t);
+  if(el)el.classList.add('active');
+  saveSettingsToStorage();
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────
+function openSettings(){
+  document.getElementById('sBrandName').value=settings.brandName;
+  document.getElementById('sStoreName').value=settings.storeName;
+  document.getElementById('sCurrency').value=settings.currency;
+  document.getElementById('sDateFmt').value=settings.dateFmt;
+  document.getElementById('sThreshold').value=settings.threshold;
+  document.getElementById('sShowDist').value=settings.showDist;
+  document.getElementById('sShowAsin').value=settings.showAsin;
+  document.getElementById('sShowTag').value=settings.showTag;
+  document.getElementById('sShowInboundTotal').value=settings.showInboundTotal;
+  document.getElementById('sShowTotalBreakdown').value=settings.showTotalBreakdown;
+  document.getElementById('sAutoSave').value=settings.autoSave;
+  document.getElementById('settingsOverlay').classList.add('open');
+}
+function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); }
+
+function saveSettings(){
+  settings.brandName = document.getElementById('sBrandName').value.trim()||'Inventory Manager';
+  settings.storeName = document.getElementById('sStoreName').value.trim()||'PrepPrime';
+  settings.currency  = document.getElementById('sCurrency').value;
+  settings.dateFmt   = document.getElementById('sDateFmt').value;
+  settings.threshold = Math.max(0,parseInt(document.getElementById('sThreshold').value)||50);
+  settings.showDist         = parseInt(document.getElementById('sShowDist').value);
+  settings.showAsin         = parseInt(document.getElementById('sShowAsin').value);
+  settings.showTag          = parseInt(document.getElementById('sShowTag').value);
+  settings.showInboundTotal     = parseInt(document.getElementById('sShowInboundTotal').value);
+  settings.showTotalBreakdown   = parseInt(document.getElementById('sShowTotalBreakdown').value);
+  settings.autoSave  = parseInt(document.getElementById('sAutoSave').value);
+  saveSettingsToStorage();
+  applySettings();
+  closeSettings();
+  showToast('Settings saved ✓');
+}
+
+function applySettings(){
+  // brand name
+  document.getElementById('brandName').textContent=settings.brandName;
+  // store name (PrepPrime → custom)
+  const ppOpt=document.getElementById('ppFilterOpt');
+  if(ppOpt)ppOpt.textContent=settings.storeName;
+  const ppHdr=document.getElementById('th-prepprime');
+  if(ppHdr)ppHdr.childNodes[0].textContent=settings.storeName+' ';
+  document.getElementById('fPrepprimeLabel').textContent=settings.storeName+' Stock';
+  renderAll();
+}
+
+function saveSettingsToStorage(){
+  try{ localStorage.setItem('lf-settings',JSON.stringify(settings)); }catch(e){}
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  try{
+    const sv=localStorage.getItem('lf-settings');
+    if(sv){ Object.assign(settings,JSON.parse(sv)); }
+    const cl=localStorage.getItem('lf-changelog');
+    if(cl) changelog=JSON.parse(cl);
+  }catch(e){}
+
+  setTheme(settings.theme);
+  applySettings();
+  document.getElementById('headerDate').textContent='Stock · '+fmtDate(data.last_updated);
+  updateLogBadge();
+  renderAll();
+  buildTagFilter();
+
+  document.getElementById('searchInput').addEventListener('input',renderAll);
+  document.getElementById('filterStore').addEventListener('change',renderAll);
+  document.getElementById('filterTag').addEventListener('change',renderAll);
+  document.getElementById('filterLevel').addEventListener('change',renderAll);
+  document.getElementById('filterSort').addEventListener('change',()=>{ sortState={field:null,dir:1}; clearSortHeaders(); renderAll(); });
+
+  document.getElementById('modalOverlay').addEventListener('keydown',e=>{ if(e.key==='Enter')saveSKU(); if(e.key==='Escape')closeModal(); });
+  document.getElementById('clOverlay').addEventListener('click',e=>{ if(e.target===e.currentTarget)closeChangelog(); });
+  document.getElementById('settingsOverlay').addEventListener('click',e=>{ if(e.target===e.currentTarget)closeSettings(); });
+  document.getElementById('waOverlay').addEventListener('click',e=>{ if(e.target===e.currentTarget)closeWa(); });
+});
+
+// ── SORT ──────────────────────────────────────────────────────────
+function clearSortHeaders(){ document.querySelectorAll('thead th').forEach(th=>th.classList.remove('sorted-asc','sorted-desc')); }
+function updateSortHeaders(field,dir){
+  clearSortHeaders();
+  const map={sku:'th-sku',amazon:'th-amazon',tiktok:'th-tiktok',walmart:'th-walmart',prepprime:'th-prepprime',total:'th-total',price:'th-price'};
+  const el=document.getElementById(map[field]);
+  if(el)el.classList.add(dir===1?'sorted-asc':'sorted-desc');
+}
+function sortBy(field){
+  document.getElementById('filterSort').value='none';
+  sortState=sortState.field===field?{field,dir:sortState.dir*-1}:{field,dir:1};
+  updateSortHeaders(sortState.field,sortState.dir);
+  renderAll();
+}
+
+// ── TAG FILTER ────────────────────────────────────────────────────
+function buildTagFilter(){
+  const tags=[...new Set(data.skus.map(r=>r.tag||'').filter(Boolean))].sort();
+  const sel=document.getElementById('filterTag');
+  const cur=sel.value;
+  sel.innerHTML='<option value="all">All Tags</option>'+tags.map(t=>`<option value="${esc(t)}" ${t===cur?'selected':''}>${esc(t)}</option>`).join('');
+  // datalist for modal
+  const dl=document.getElementById('tagSuggestions');
+  if(dl)dl.innerHTML=tags.map(t=>`<option value="${esc(t)}">`).join('');
+}
+
+// ── FILTER + SORT ─────────────────────────────────────────────────
+function getRows(){
+  const q=document.getElementById('searchInput').value.trim().toLowerCase();
+  const store=document.getElementById('filterStore').value;
+  const tag=document.getElementById('filterTag').value;
+  const lvl=document.getElementById('filterLevel').value;
+  const srt=document.getElementById('filterSort').value;
+
+  let rows=data.skus.filter(r=>{
+    if(q && !(r.sku.toLowerCase().includes(q)||(r.asin||'').toLowerCase().includes(q)||(r.tag||'').toLowerCase().includes(q)||(r.notes||'').toLowerCase().includes(q))) return false;
+    if(tag!=='all' && (r.tag||'')!==tag) return false;
+    if(lvl==='zero' && !rowHasZero(r)) return false;
+    else if(lvl!=='all' && lvl!=='zero' && rowLevel(r,store)!==lvl) return false;
+    return true;
+  });
+
+  const sortFn=(field,dir)=>(a,b)=>{
+    let av=field==='total'?rowDisplayTotal(a):(a[field]??'');
+    let bv=field==='total'?rowDisplayTotal(b):(b[field]??'');
+    if(typeof av==='string') return dir*av.localeCompare(bv);
+    return dir*(av-bv);
+  };
+  if(sortState.field){ rows.sort(sortFn(sortState.field,sortState.dir)); }
+  else if(srt!=='none'){ const li=srt.lastIndexOf('_'); rows.sort(sortFn(srt.slice(0,li),srt.slice(li+1)==='asc'?1:-1)); }
+  return rows;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────
+function renderAll(){ renderStats(); renderTable(); }
+
+function renderStats(){
+  const all=data.skus;
+  const total=all.reduce((s,r)=>s+rowDisplayTotal(r),0);
+  const amazon=all.reduce((s,r)=>s+(r.amazon||0),0);
+  const amz_ib=all.reduce((s,r)=>s+(r.amazon_inbound||0),0);
+  const tiktok=all.reduce((s,r)=>s+(r.tiktok||0),0);
+  const tt_ib=all.reduce((s,r)=>s+(r.tiktok_inbound||0),0);
+  const walmart=all.reduce((s,r)=>s+(r.walmart||0),0);
+  const wm_ib=all.reduce((s,r)=>s+(r.walmart_inbound||0),0);
+  const prepprime=all.reduce((s,r)=>s+(r.prepprime||0),0);
+  const sn=settings.storeName;
+
+  const lowSkus=all.filter(r=>rowLevel(r,'all')==='low');
+  const zeroSkus=all.filter(r=>rowHasZero(r));
+  const lowCount=lowSkus.length;
+  const zeroCount=zeroSkus.length;
+
+  const makeTooltip=(skus,dotClass='')=>{
+    if(!skus.length) return '';
+    const items=skus.map(r=>`<div class="stat-tooltip-item"><div class="stat-tooltip-dot ${dotClass}"></div>${esc(r.sku)}</div>`).join('');
+    return `<div class="stat-tooltip"><div class="stat-tooltip-title">${skus.length} SKU${skus.length!==1?'s':''}</div>${items}</div>`;
+  };
+
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total SKUs</div><div class="stat-value v-accent">${all.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Stock</div><div class="stat-value">${total.toLocaleString()}</div></div>
+    <div class="stat-card s-red"><div class="stat-label">Low Stock SKUs</div><div class="stat-value v-red"><span class="stat-tooltip-wrap">${lowCount}<span class="stat-info">i</span>${makeTooltip(lowSkus)}</span></div></div>
+    ${zeroCount>0?`<div class="stat-card s-red"><div class="stat-label">Out of Stock</div><div class="stat-value v-red"><span class="stat-tooltip-wrap">${zeroCount}<span class="stat-info">i</span>${makeTooltip(zeroSkus,'zero')}</span></div></div>`:''}
+    <div class="stat-card"><div class="stat-label">Amazon</div><div class="stat-value">${amazon.toLocaleString()}${amz_ib>0?`<span class="stat-inbound">+${amz_ib.toLocaleString()}</span>`:''}</div></div>
+    <div class="stat-card"><div class="stat-label">TikTok</div><div class="stat-value">${tiktok.toLocaleString()}${tt_ib>0?`<span class="stat-inbound">+${tt_ib.toLocaleString()}</span>`:''}</div></div>
+    <div class="stat-card"><div class="stat-label">Walmart</div><div class="stat-value">${walmart.toLocaleString()}${wm_ib>0?`<span class="stat-inbound">+${wm_ib.toLocaleString()}</span>`:''}</div></div>
+    <div class="stat-card s-green"><div class="stat-label">${esc(sn)}</div><div class="stat-value v-green">${prepprime.toLocaleString()}</div></div>
+  `;
+}
+
+function renderTable(){
+  const rows=getRows();
+  const store=document.getElementById('filterStore').value;
+  const tbody=document.getElementById('tableBody');
+  const tfoot=document.getElementById('tableFoot');
+  const cur=settings.currency;
+  const sn=settings.storeName;
+
+  if(!rows.length){
+    tbody.innerHTML=`<tr><td colspan="10"><div class="empty"><div class="icon">🔍</div>No SKUs match your filters</div></td></tr>`;
+    tfoot.innerHTML=''; return;
+  }
+
+  const nc=(val,row)=>{ const t=getThreshForRow(row); const l=stockLevel(val,t); return l==='low'?' num-low':l==='med'?' num-med':''; };
+  const ib=(val)=>val?`<span class="inbound-tag">+${val}</span>`:'';
+
+  tbody.innerHTML=rows.map(row=>{
+    const idx=data.skus.indexOf(row);
+    const lvl=rowLevel(row,store);
+    const stockOnly=rowTotal(row);
+    const dispTotal=rowDisplayTotal(row);
+    const inboundSum=(row.amazon_inbound||0)+(row.tiktok_inbound||0)+(row.walmart_inbound||0);
+    const totalDisplay=settings.showInboundTotal&&inboundSum>0
+      ? `${dispTotal.toLocaleString()}${settings.showTotalBreakdown?`<br><span style="font-size:10px;font-weight:500;color:var(--med);">(${stockOnly.toLocaleString()} + ${inboundSum.toLocaleString()})</span>`:''}`
+      : stockOnly.toLocaleString();
+    const t=getThreshForRow(row);
+    const needsReorder=rowLevel(row,'all')==='low';
+
+    const badge=lvl==='low'?'<span class="badge badge-low">⚠ Low</span>':lvl==='med'?'<span class="badge badge-med">● Med</span>':'<span class="badge badge-good">✓ Good</span>';
+
+    // Stock distribution bar
+    let distBar='';
+    if(settings.showDist&&stockOnly>0){
+      const pct=v=>Math.max(2,Math.round((v/stockOnly)*100));
+      distBar=`<div class="dist-bar" title="AMZ ${row.amazon||0} / TT ${row.tiktok||0} / WMT ${row.walmart||0} / ${sn} ${row.prepprime||0}">
+        <div class="dist-seg" style="width:${pct(row.amazon||0)}%;background:#f59e0b"></div>
+        <div class="dist-seg" style="width:${pct(row.tiktok||0)}%;background:#6366f1"></div>
+        <div class="dist-seg" style="width:${pct(row.walmart||0)}%;background:#0ea5e9"></div>
+        <div class="dist-seg" style="width:${pct(row.prepprime||0)}%;background:#16a34a"></div>
+      </div>`;
+    }
+
+    const asinLink=settings.showAsin&&row.asin?`<a class="asin-link" href="https://www.amazon.com/dp/${esc(row.asin)}" target="_blank" title="Open on Amazon">${esc(row.asin)} ↗</a>`:'';
+    const tagPill=settings.showTag&&row.tag?`<span class="tag-pill">${esc(row.tag)}</span>`:'';
+    const reorderDot=needsReorder&&row.reorder_point>0?`<span class="reorder-dot" title="Below custom reorder point"></span>`:'';
+
+    return `<tr class="${lvl==='low'?'row-low':''}">
+      <td>
+        <div class="sku-cell">${esc(row.sku)}${reorderDot}</div>
+        ${asinLink}${tagPill}
+      </td>
+      <td class="num${nc(row.amazon||0,row)} editable-cell" ondblclick="startInlineEdit(this,${idx},'amazon')" title="Double-click to edit">
+        ${(row.amazon||0).toLocaleString()}${ib(row.amazon_inbound)}
+      </td>
+      <td class="num${nc(row.tiktok||0,row)} editable-cell" ondblclick="startInlineEdit(this,${idx},'tiktok')" title="Double-click to edit">
+        ${(row.tiktok||0).toLocaleString()}${ib(row.tiktok_inbound)}
+      </td>
+      <td class="num${nc(row.walmart||0,row)} editable-cell" ondblclick="startInlineEdit(this,${idx},'walmart')" title="Double-click to edit">
+        ${(row.walmart||0).toLocaleString()}${ib(row.walmart_inbound)}
+      </td>
+      <td class="num editable-cell" ondblclick="startInlineEdit(this,${idx},'prepprime')" title="Double-click to edit">
+        ${(row.prepprime||0).toLocaleString()}
+      </td>
+      <td class="total-cell">
+        ${totalDisplay}
+        ${distBar}
+      </td>
+      <td class="price-cell editable-cell" ondblclick="startInlineEdit(this,${idx},'price')" title="Double-click to edit">${cur}${(row.price||0).toFixed(2)}</td>
+      <td>${badge}</td>
+      <td class="editable-cell" ondblclick="startInlineEdit(this,${idx},'notes')" title="Double-click to edit notes">
+        <div class="notes-cell" title="${esc(row.notes)}">${esc(row.notes)||'—'}</div>
+      </td>
+      <td style="white-space:nowrap">
+        <button class="act-btn" onclick="openEditModal(${idx})" title="Edit">✎</button>
+        <button class="act-btn del" onclick="deleteSKU(${idx})" title="Delete">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const ta=rows.reduce((s,r)=>s+(r.amazon||0),0);
+  const tt=rows.reduce((s,r)=>s+(r.tiktok||0),0);
+  const tw=rows.reduce((s,r)=>s+(r.walmart||0),0);
+  const tp=rows.reduce((s,r)=>s+(r.prepprime||0),0);
+  const tot=rows.reduce((s,r)=>s+rowDisplayTotal(r),0);
+  tfoot.innerHTML=`<tr>
+    <td>TOTAL &nbsp;(${rows.length} SKU${rows.length!==1?'s':''})</td>
+    <td class="num">${ta.toLocaleString()}</td>
+    <td class="num">${tt.toLocaleString()}</td>
+    <td class="num">${tw.toLocaleString()}</td>
+    <td class="num">${tp.toLocaleString()}</td>
+    <td class="total-cell">${tot.toLocaleString()}</td>
+    <td colspan="4"></td>
+  </tr>`;
+}
+
+// ── INLINE EDIT ───────────────────────────────────────────────────
+function startInlineEdit(td,idx,field){
+  if(idx<0||idx>=data.skus.length)return;
+  if(td.querySelector('.inline-input'))return;
+  const row=data.skus[idx];
+  const isPrice=field==='price', isNotes=field==='notes';
+  const oldVal=row[field]??'';
+  const input=document.createElement('input');
+  input.className='inline-input';
+  input.type=isNotes?'text':'number';
+  if(!isNotes){input.min='0'; if(isPrice)input.step='0.01';}
+  input.value=oldVal;
+  input.style.width=isNotes?'130px':isPrice?'80px':'70px';
+  input.style.textAlign=isNotes?'left':'right';
+  td.innerHTML=''; td.appendChild(input); input.focus(); input.select();
+  const commit=()=>{
+    let nv=isNotes?input.value.trim():isPrice?Math.max(0,parseFloat(input.value)||0):Math.max(0,parseInt(input.value)||0);
+    if(String(nv)!==String(oldVal)){
+      logChange(row.sku,'edited',[{field,oldVal,newVal:nv}]);
+      row[field]=nv;
+      data.last_updated=new Date().toISOString().slice(0,10);
+      document.getElementById('headerDate').textContent='Stock · '+fmtDate(data.last_updated);
+      markUnsaved();
+      showToast(row.sku+' → '+fieldLabel(field)+' updated ✓');
+    }
+    renderAll(); buildTagFilter();
+  };
+  input.addEventListener('blur',commit);
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();input.blur();}
+    if(e.key==='Escape'){e.preventDefault();renderAll();}
+    if(e.key==='Tab'){e.preventDefault();input.blur();}
+  });
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────
+const MFIELDS=['fSku','fAsin','fTag','fReorder','fAmazon','fAmazonInbound','fTiktok','fTiktokInbound','fWalmart','fWalmartInbound','fPrepprime','fPrice','fNotes'];
+
+function openAddModal(){
+  editIdx=null;
+  document.getElementById('modalTitle').textContent='Add SKU';
+  MFIELDS.forEach(id=>{ document.getElementById(id).value=''; });
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('fSku').focus(),50);
+}
+function openEditModal(idx){
+  if(idx<0||idx>=data.skus.length)return;
+  editIdx=idx; const r=data.skus[idx];
+  document.getElementById('modalTitle').textContent='Edit · '+r.sku;
+  document.getElementById('fSku').value=r.sku||'';
+  document.getElementById('fAsin').value=r.asin||'';
+  document.getElementById('fTag').value=r.tag||'';
+  document.getElementById('fReorder').value=r.reorder_point||0;
+  document.getElementById('fAmazon').value=r.amazon||0;
+  document.getElementById('fAmazonInbound').value=r.amazon_inbound||0;
+  document.getElementById('fTiktok').value=r.tiktok||0;
+  document.getElementById('fTiktokInbound').value=r.tiktok_inbound||0;
+  document.getElementById('fWalmart').value=r.walmart||0;
+  document.getElementById('fWalmartInbound').value=r.walmart_inbound||0;
+  document.getElementById('fPrepprime').value=r.prepprime||0;
+  document.getElementById('fPrice').value=r.price||0;
+  document.getElementById('fNotes').value=r.notes||'';
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('fAmazon').focus(),50);
+}
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('open'); editIdx=null; }
+document.getElementById('modalOverlay').addEventListener('click',e=>{ if(e.target===e.currentTarget)closeModal(); });
+
+function saveSKU(){
+  const sku=document.getElementById('fSku').value.trim().toUpperCase();
+  if(!sku){showToast('SKU name is required',true); document.getElementById('fSku').focus(); return;}
+  if(editIdx===null&&data.skus.some(r=>r.sku===sku)){showToast('SKU already exists',true); document.getElementById('fSku').focus(); return;}
+  const n=id=>Math.max(0,parseInt(document.getElementById(id).value)||0);
+  const newRow={
+    sku, asin:document.getElementById('fAsin').value.trim().toUpperCase(),
+    tag:document.getElementById('fTag').value.trim(),
+    reorder_point:n('fReorder'),
+    amazon:n('fAmazon'), amazon_inbound:n('fAmazonInbound'),
+    tiktok:n('fTiktok'), tiktok_inbound:n('fTiktokInbound'),
+    walmart:n('fWalmart'), walmart_inbound:n('fWalmartInbound'),
+    prepprime:n('fPrepprime'),
+    price:Math.max(0,parseFloat(document.getElementById('fPrice').value)||0),
+    notes:document.getElementById('fNotes').value.trim(),
+  };
+  if(editIdx!==null){
+    const oldRow=data.skus[editIdx];
+    const changes=Object.keys(newRow).filter(k=>String(newRow[k])!==String(oldRow[k])).map(k=>({field:k,oldVal:oldRow[k],newVal:newRow[k]}));
+    if(changes.length)logChange(sku,'edited',changes);
+    data.skus[editIdx]=newRow;
+    showToast('SKU updated ✓');
+  } else {
+    logChange(sku,'added',[]);
+    data.skus.push(newRow);
+    showToast('SKU added ✓');
+  }
+  data.last_updated=new Date().toISOString().slice(0,10);
+  document.getElementById('headerDate').textContent='Stock · '+fmtDate(data.last_updated);
+  markUnsaved(); closeModal(); buildTagFilter(); renderAll();
+}
+
+function deleteSKU(idx){
+  if(idx<0||idx>=data.skus.length)return;
+  const name=data.skus[idx].sku;
+  if(!confirm('Delete '+name+'?\n\nThis cannot be undone.'))return;
+  logChange(name,'deleted',[]);
+  data.skus.splice(idx,1);
+  data.last_updated=new Date().toISOString().slice(0,10);
+  document.getElementById('headerDate').textContent='Stock · '+fmtDate(data.last_updated);
+  markUnsaved(); buildTagFilter(); renderAll(); showToast(name+' deleted');
+}
+
+// ── CHANGELOG ─────────────────────────────────────────────────────
+function logChange(sku,type,changes){
+  changelog.unshift({ts:nowStr(),sku,type,changes});
+  if(changelog.length>200)changelog.pop();
+  try{localStorage.setItem('lf-changelog',JSON.stringify(changelog));}catch(e){}
+  updateLogBadge();
+}
+function updateLogBadge(){
+  const b=document.getElementById('logBadge');
+  if(changelog.length>0){b.style.display='inline';b.textContent=changelog.length>99?'99+':changelog.length;}
+  else b.style.display='none';
+}
+function openChangelog(){ renderChangelog(); document.getElementById('clOverlay').classList.add('open'); }
+function closeChangelog(){ document.getElementById('clOverlay').classList.remove('open'); }
+function renderChangelog(){
+  const body=document.getElementById('clBody');
+  if(!changelog.length){body.innerHTML='<div class="log-empty">📭 No changes logged yet.</div>';return;}
+  body.innerHTML=changelog.map(e=>{
+    const bt=e.type==='added'?'+ Added':e.type==='deleted'?'✕ Deleted':'✎ Edited';
+    const ch=(e.changes||[]).map(c=>`<div class="log-change-row"><span class="log-field">${fieldLabel(c.field)}</span><span class="log-old">${esc(String(c.oldVal))}</span><span class="log-arrow">→</span><span class="log-new">${esc(String(c.newVal))}</span></div>`).join('');
+    return `<div class="log-item"><div class="log-sku">${esc(e.sku)} <span class="log-badge ${e.type}">${bt}</span></div><div class="log-time">🕐 ${e.ts}</div>${ch?`<div class="log-changes">${ch}</div>`:''}</div>`;
+  }).join('');
+}
+function clearChangelog(){
+  if(!confirm('Clear all change logs?'))return;
+  changelog=[];
+  try{localStorage.removeItem('lf-changelog');}catch(e){}
+  updateLogBadge(); renderChangelog(); showToast('Change log cleared');
+}
+
+// ── WHATSAPP ──────────────────────────────────────────────────────
+function openWhatsApp(){
+  const now=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  const sn=settings.storeName; const cur=settings.currency;
+  const lines=[`📦 *${settings.brandName} — Stock Summary*`,'📅 '+now,'─────────────────────'];
+  const low=data.skus.filter(r=>rowLevel(r,'all')==='low');
+  const med=data.skus.filter(r=>rowLevel(r,'all')==='med');
+  const good=data.skus.filter(r=>rowLevel(r,'all')==='good');
+  const fmt=r=>{
+    const tot=rowTotal(r);
+    return [`*${r.sku}*  [Total: ${rowDisplayTotal(r).toLocaleString()}]  ${cur}${(r.price||0).toFixed(2)}`,
+      `  AMZ: ${r.amazon||0}${r.amazon_inbound?` (+${r.amazon_inbound} inb)`:''} | TT: ${r.tiktok||0}${r.tiktok_inbound?` (+${r.tiktok_inbound} inb)`:''} | WMT: ${r.walmart||0}${r.walmart_inbound?` (+${r.walmart_inbound} inb)`:''} | ${sn}: ${r.prepprime||0}`
+    ].join('\n');
+  };
+  if(low.length){lines.push('\n🔴 *LOW STOCK — Action Needed*');low.forEach(r=>lines.push(fmt(r)));}
+  if(med.length){lines.push('\n🟡 *MEDIUM STOCK*');med.forEach(r=>lines.push(fmt(r)));}
+  if(good.length){lines.push('\n🟢 *HEALTHY STOCK*');good.forEach(r=>lines.push(fmt(r)));}
+  lines.push('\n─────────────────────');
+  const total=data.skus.reduce((s,r)=>s+rowDisplayTotal(r),0);
+  lines.push(`📊 *TOTALS*\nAMZ: ${data.skus.reduce((s,r)=>s+(r.amazon||0),0).toLocaleString()} | TikTok: ${data.skus.reduce((s,r)=>s+(r.tiktok||0),0).toLocaleString()} | Walmart: ${data.skus.reduce((s,r)=>s+(r.walmart||0),0).toLocaleString()} | ${sn}: ${data.skus.reduce((s,r)=>s+(r.prepprime||0),0).toLocaleString()}`);
+  lines.push(`🏷 Grand Total: *${total.toLocaleString()} units* across ${data.skus.length} SKUs`);
+  lines.push('\n_Generated by '+settings.brandName+' Inventory Manager_');
+  document.getElementById('waPreview').textContent=lines.join('\n');
+  document.getElementById('waOverlay').classList.add('open');
+}
+function closeWa(){ document.getElementById('waOverlay').classList.remove('open'); }
+function copyWa(){
+  const text=document.getElementById('waPreview').textContent;
+  (navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject()).catch(()=>{
+    const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+  }).then(()=>{}).finally(()=>{ showToast('Copied to clipboard ✓'); closeWa(); });
+  if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>{ showToast('Copied to clipboard ✓'); closeWa(); }).catch(()=>{});
+}
+
+// ── JSON ──────────────────────────────────────────────────────────
+function normaliseRow(r){
+  return {
+    sku:r.sku||'', asin:r.asin||'', tag:r.tag||'', reorder_point:r.reorder_point||0,
+    amazon:r.amazon||0, amazon_inbound:r.amazon_inbound||0,
+    tiktok:r.tiktok||0, tiktok_inbound:r.tiktok_inbound||0,
+    walmart:r.walmart||0, walmart_inbound:r.walmart_inbound||0,
+    prepprime:r.prepprime||0, price:r.price||0, notes:r.notes||''
+  };
+}
+function loadJSON(e){
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const parsed=JSON.parse(ev.target.result);
+      if(!parsed.skus||!Array.isArray(parsed.skus))throw new Error('Missing skus array');
+      parsed.skus=parsed.skus.map(normaliseRow);
+      data=parsed;
+      document.getElementById('headerDate').textContent='Stock · '+fmtDate(data.last_updated||'');
+      sortState={field:null,dir:1}; clearSortHeaders();
+      document.getElementById('filterSort').value='none';
+      buildTagFilter(); renderAll(); unsavedChanges=0;
+      showToast('JSON loaded ✓');
+    }catch(err){showToast('Invalid JSON: '+err.message,true);}
+  };
+  reader.onerror=()=>showToast('Failed to read file',true);
+  reader.readAsText(file); e.target.value='';
+}
+function exportJSON(){
+  data.last_updated=new Date().toISOString().slice(0,10);
+  document.getElementById('headerDate').textContent='Stock · '+fmtDate(data.last_updated);
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  triggerDownload(URL.createObjectURL(blob),'WPT-inventory-'+data.last_updated+'.json');
+  unsavedChanges=0; showToast('JSON saved ✓');
+}
+
+// ── CSV IMPORT ────────────────────────────────────────────────────
+function importCSV(e){
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const lines=ev.target.result.split(/\r?\n/).filter(l=>l.trim());
+      if(lines.length<2)throw new Error('CSV must have a header row and at least one data row');
+      const headers=parseCSVRow(lines[0]).map(h=>h.trim().toLowerCase());
+      const find=(...names)=>{ for(const n of names){ const i=headers.indexOf(n.toLowerCase()); if(i>-1)return i; } return -1; };
+      const iSku=find('sku'); if(iSku<0)throw new Error('No SKU column found');
+      const iAmz=find('amazon','amazon stock');
+      const iAmzIb=find('amazon inbound','amazon_inbound');
+      const iTt=find('tiktok','tiktok stock');
+      const iTtIb=find('tiktok inbound','tiktok_inbound');
+      const iWm=find('walmart','walmart stock');
+      const iWmIb=find('walmart inbound','walmart_inbound');
+      const iPp=find('prepprime','preprime',settings.storeName.toLowerCase());
+      const iPrice=find('price');
+      const iNotes=find('notes');
+      const iAsin=find('asin');
+      const iTag=find('tag','category');
+      let added=0, updated=0;
+      for(let i=1;i<lines.length;i++){
+        const cols=parseCSVRow(lines[i]);
+        const sku=(cols[iSku]||'').trim().toUpperCase();
+        if(!sku)continue;
+        const row={
+          sku, asin:iAsin>-1?(cols[iAsin]||'').trim():'',
+          tag:iTag>-1?(cols[iTag]||'').trim():'',
+          reorder_point:0,
+          amazon:iAmz>-1?parseInt(cols[iAmz])||0:0,
+          amazon_inbound:iAmzIb>-1?parseInt(cols[iAmzIb])||0:0,
+          tiktok:iTt>-1?parseInt(cols[iTt])||0:0,
+          tiktok_inbound:iTtIb>-1?parseInt(cols[iTtIb])||0:0,
+          walmart:iWm>-1?parseInt(cols[iWm])||0:0,
+          walmart_inbound:iWmIb>-1?parseInt(cols[iWmIb])||0:0,
+          prepprime:iPp>-1?parseInt(cols[iPp])||0:0,
+          price:iPrice>-1?parseFloat(cols[iPrice])||0:0,
+          notes:iNotes>-1?(cols[iNotes]||'').trim():'',
+        };
+        const existing=data.skus.findIndex(r=>r.sku===sku);
+        if(existing>-1){ data.skus[existing]=row; updated++; }
+        else{ data.skus.push(row); added++; }
+      }
+      data.last_updated=new Date().toISOString().slice(0,10);
+      document.getElementById('headerDate').textContent='Stock · '+fmtDate(data.last_updated);
+      buildTagFilter(); renderAll(); markUnsaved();
+      showToast(`CSV imported: ${added} added, ${updated} updated ✓`);
+    }catch(err){showToast('CSV Error: '+err.message,true);}
+  };
+  reader.readAsText(file); e.target.value='';
+}
+function parseCSVRow(line){
+  const result=[]; let cur='', inQ=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(c===','&&!inQ){result.push(cur);cur='';}
+    else cur+=c;
+  }
+  result.push(cur); return result;
+}
+
+// ── CSV EXPORT ────────────────────────────────────────────────────
+function exportCSV(){
+  const sn=settings.storeName;
+  const h=['SKU','ASIN','Tag','Amazon','Amazon Inbound','TikTok','TikTok Inbound','Walmart','Walmart Inbound',sn,'Total','Price','Notes'];
+  const rows=data.skus.map(r=>[csvField(r.sku),csvField(r.asin),csvField(r.tag),r.amazon||0,r.amazon_inbound||0,r.tiktok||0,r.tiktok_inbound||0,r.walmart||0,r.walmart_inbound||0,r.prepprime||0,rowTotal(r),(r.price||0).toFixed(2),csvField(r.notes)]);
+  const csv=[h.map(csvField),...rows].map(r=>r.join(',')).join('\r\n');
+  triggerDownload(URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'})),'WPT-inventory-'+new Date().toISOString().slice(0,10)+'.csv');
+  showToast('CSV exported ✓');
+}
+
+// ── FILE MENU ─────────────────────────────────────────────────────
+function toggleFileMenu(e){
+  e.stopPropagation();
+  document.getElementById('fileMenu').classList.toggle('open');
+}
+function closeFileMenu(){
+  document.getElementById('fileMenu').classList.remove('open');
+}
+document.addEventListener('click', () => closeFileMenu());
+
+// ── TOAST ─────────────────────────────────────────────────────────
+function showToast(msg,isErr=false){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.className='toast show'+(isErr?' err':'');
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>{el.className='toast';},3200);
+}
+</script>
+</body>
+</html>
